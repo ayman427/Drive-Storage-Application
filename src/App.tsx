@@ -1,0 +1,57 @@
+// src/App.tsx
+import { SignInButton } from "@clerk/clerk-react";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Drive from "./Drive";
+import Sidebar from "./components/ui/Sidebar";
+import Header from "./components/ui/Header";
+
+function App() {
+  return (
+    <Router>
+      <div className="flex h-screen">
+        <Sidebar />
+        <div className="flex-1 flex flex-col bg-gray-100">
+          <Header />
+          <main className="p-6 flex-1 overflow-auto">
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <main>
+                    <Unauthenticated>
+                      <div className="text-center mt-20">
+                        <h1 className="text-4xl font-bold mb-4 text-gray-800">
+                          Welcome to your Drive!
+                        </h1>
+                        <SignInButton />
+                      </div>
+                    </Unauthenticated>
+                    <Authenticated>
+                      <h1 className="text-4xl font-bold text-gray-800">
+                        Dashboard Home
+                      </h1>
+                    </Authenticated>
+                  </main>
+                }
+              />
+              <Route
+                path="/drive"
+                element={
+                  <Authenticated>
+                    <Drive />
+                  </Authenticated>
+                }
+              />
+            </Routes>
+          </main>
+          <footer className="bg-white shadow p-4 text-center text-gray-600">
+            &copy; {new Date().getFullYear()} Drive
+          </footer>
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
