@@ -3,14 +3,13 @@ import { SignIn } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Drive from "./Drive";
-import Sidebar from "./components/ui/Sidebar";
 import Header from "./components/ui/Header";
+import Hero from "./components/Hero";
 
 function App() {
   return (
     <Router>
       <div className="flex h-screen">
-        <Sidebar />
         <div className="flex-1 flex flex-col bg-gray-100">
           <Header />
           <main className="p-6 flex-1 overflow-auto">
@@ -31,7 +30,7 @@ function App() {
                     </Unauthenticated>
                     <Authenticated>
                       <h1 className="text-4xl font-bold text-gray-800">
-                        Dashboard Home
+                        <Hero />
                       </h1>
                     </Authenticated>
                   </main>
