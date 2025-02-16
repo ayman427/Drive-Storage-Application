@@ -1,5 +1,5 @@
 // src/App.tsx
-import { SignInButton, SignIn } from "@clerk/clerk-react";
+import { SignIn } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Drive from "./Drive";
