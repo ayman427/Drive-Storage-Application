@@ -1,5 +1,5 @@
 // src/App.tsx
-import { SignInButton } from "@clerk/clerk-react";
+import { SignInButton, SignIn } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Drive from "./Drive";
@@ -18,12 +18,12 @@ function App() {
               element={
                 <main>
                   <Unauthenticated>
-                    <div>
-                      <h1 className="text-black dark:text-white">
+                    <div className="mt-8">
+                      <h1 className="text-black dark:text-white font-bold text-center mb-3">
                         Login to get started
                       </h1>
                       <center>
-                        <SignInButton />
+                        <SignIn />
                       </center>
                     </div>
                   </Unauthenticated>
@@ -43,9 +43,6 @@ function App() {
             />
           </Routes>
         </main>
-        <footer className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 p-4 text-center">
-          &copy; {new Date().getFullYear()} Drive
-        </footer>
       </div>
     </Router>
   );
