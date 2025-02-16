@@ -27,9 +27,9 @@ const Hero = () => {
         </div>
         <div className="md:w-1/2 mt-10 md:mt-0">
           <motion.img
-            src="src/assets/heroimage.png"
+            src="https://cdni.iconscout.com/illustration/premium/thumb/cloud-storage-5983542-4960183.png"
             alt="Cloud Storage"
-            className="w-full h-auto rounded-2xl shadow-lg"
+            className="w-full h-auto rounded-2xl"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}

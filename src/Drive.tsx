@@ -135,7 +135,7 @@ const Drive = () => {
     ) || [];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen dark:bg-black">
       <h1 className="text-4xl font-bold mb-6 text-center">My Drive</h1>
       {isSignedIn ? (
         <>
@@ -185,7 +185,7 @@ const Drive = () => {
             placeholder="Search files..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border border-gray-400 rounded-lg px-4 py-2 mb-4 w-full"
+            className="border border-gray-400 rounded-lg px-4 py-2 mb-4 w-full dark:text-black"
           />
 
           {filteredFiles.length > 0 ? (
@@ -193,7 +193,7 @@ const Drive = () => {
               {filteredFiles.map((file) => (
                 <div
                   key={file._id}
-                  className="bg-white p-4 rounded-lg shadow-md"
+                  className="bg-white p-4 rounded-lg shadow-md dark:bg-filescard"
                 >
                   {renderPreview(file.fileUrl, file.fileName)}
                   <p className="mt-2 font-semibold text-left">

@@ -9,45 +9,43 @@ import Hero from "./components/Hero";
 function App() {
   return (
     <Router>
-      <div className="flex h-screen">
-        <div className="flex-1 flex flex-col bg-gray-100">
-          <Header />
-          <main className="p-6 flex-1 overflow-auto">
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <main>
-                    <Unauthenticated>
-                      <div className="text-center mt-20">
-                        <h1 className="text-4xl font-bold mb-4 text-gray-800">
-                          Login to get started
-                        </h1>
-                        <center>
-                          <SignInButton />
-                        </center>
-                      </div>
-                    </Unauthenticated>
-                    <Authenticated>
-                      <Hero />
-                    </Authenticated>
-                  </main>
-                }
-              />
-              <Route
-                path="/drive"
-                element={
+      <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen">
+        <Header />
+        <main>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <main>
+                  <Unauthenticated>
+                    <div>
+                      <h1 className="text-black dark:text-white">
+                        Login to get started
+                      </h1>
+                      <center>
+                        <SignInButton />
+                      </center>
+                    </div>
+                  </Unauthenticated>
                   <Authenticated>
-                    <Drive />
+                    <Hero />
                   </Authenticated>
-                }
-              />
-            </Routes>
-          </main>
-          <footer className="bg-white shadow p-4 text-center text-gray-600">
-            &copy; {new Date().getFullYear()} Drive
-          </footer>
-        </div>
+                </main>
+              }
+            />
+            <Route
+              path="/drive"
+              element={
+                <Authenticated>
+                  <Drive />
+                </Authenticated>
+              }
+            />
+          </Routes>
+        </main>
+        <footer className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 p-4 text-center">
+          &copy; {new Date().getFullYear()} Drive
+        </footer>
       </div>
     </Router>
   );
