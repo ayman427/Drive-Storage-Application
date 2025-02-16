@@ -20,9 +20,12 @@ const Drive = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const url = new URL("https://api.cloudinary.com/v1_1/dtr7kwhfq/upload");
-    url.searchParams.append("upload_preset", "my_preset"); // Ensure this preset is whitelisted for unsigned uploads
-    url.searchParams.append("api_key", "971969916724757"); // Double-check API key
+    const url = new URL(import.meta.env.VITE_CLOUDINARY_URL);
+    url.searchParams.append(
+      "upload_preset",
+      import.meta.env.VITE_CLOUDINARY_PRESET
+    );
+    url.searchParams.append("api_key", import.meta.env.VITE_CLOUDINARY_API_KEY);
 
     try {
       // Log the URL and formData before the request
@@ -84,16 +87,13 @@ const Drive = () => {
         </audio>
       );
     } else if (fileType === "pdf") {
-      // Use a direct download link for PDF files
       return (
-        <a
-          href={fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 underline"
-        >
-          📄 {fileName}
-        </a>
+        <iframe
+          src={fileUrl}
+          title={fileName}
+          className="w-full h-96 border rounded-lg"
+          frameBorder="0"
+        ></iframe>
       );
     } else {
       return (

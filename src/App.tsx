@@ -1,5 +1,5 @@
 // src/App.tsx
-import { SignInButton } from "@clerk/clerk-react";
+import { SignIn } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Drive from "./Drive";
@@ -22,9 +22,11 @@ function App() {
                     <Unauthenticated>
                       <div className="text-center mt-20">
                         <h1 className="text-4xl font-bold mb-4 text-gray-800">
-                          Welcome to your Drive!
+                          Login to get started
                         </h1>
-                        <SignInButton />
+                        <center>
+                          <SignIn />
+                        </center>
                       </div>
                     </Unauthenticated>
                     <Authenticated>
