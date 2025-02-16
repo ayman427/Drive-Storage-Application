@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
-
+import { Button } from "./components/ui/button";
 const Drive = () => {
   const [file, setFile] = useState<File | null>(null);
   const uploadFile = useMutation(api.files.uploadFile);
@@ -115,12 +115,13 @@ const Drive = () => {
       {isSignedIn ? (
         <>
           <input type="file" onChange={handleFileChange} className="mb-4" />
-          <button
+          <Button
+            variant="destructive"
             onClick={handleUpload}
             className="bg-blue-500 text-white py-2 px-4 rounded mb-6 hover:bg-blue-600"
           >
             Upload
-          </button>
+          </Button>
 
           <h2 className="text-2xl mb-4">Your Files:</h2>
           {files && files.length > 0 ? (
