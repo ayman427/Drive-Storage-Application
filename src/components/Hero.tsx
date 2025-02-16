@@ -27,7 +27,7 @@ const Hero = () => {
         </div>
         <div className="md:w-1/2 mt-10 md:mt-0">
           <motion.img
-            src="src/assets/server-cloud-data-storage-concept-solution-web-database-backup-computer-infrastructure-technology-cloudscape-digital-online-service-global-network.png"
+            src="src/assets/heroimage.png"
             alt="Cloud Storage"
             className="w-full h-auto rounded-2xl shadow-lg"
             initial={{ opacity: 0, scale: 0.9 }}
