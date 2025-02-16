@@ -29,9 +29,7 @@ function App() {
                       </div>
                     </Unauthenticated>
                     <Authenticated>
-                      <h1 className="text-4xl font-bold text-gray-800">
-                        <Hero />
-                      </h1>
+                      <Hero />
                     </Authenticated>
                   </main>
                 }

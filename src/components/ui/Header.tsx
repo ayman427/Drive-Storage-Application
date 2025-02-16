@@ -1,42 +1,66 @@
-// src/components/ui/Header.tsx
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 const Header = () => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const toggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+  };
+
   return (
-    <header className="text-gray-600 body-font">
-      <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-        <Link
-          to="/"
-          className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            className="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full"
-            viewBox="0 0 24 24"
+    <div className="bg-gray-800 text-white">
+      <div className="flex justify-between items-center p-4 shadow-md">
+        <Button onClick={toggleDrawer} className="text-white">
+          <Menu className="w-6 h-6" />
+        </Button>
+        <UserButton />
+      </div>
+
+      {/* Overlay */}
+      {isDrawerOpen && (
+        <div
+          className="fixed inset-0 bg-black opacity-50 z-10"
+          onClick={closeDrawer}
+        ></div>
+      )}
+
+      {/* Drawer */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 shadow-lg transform transition-transform duration-300 z-20 ${
+          isDrawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex justify-end p-4">
+          <Button onClick={closeDrawer} className="text-white">
+            <X className="w-6 h-6" />
+          </Button>
+        </div>
+        <nav className="flex flex-col space-y-4 p-4">
+          <Link
+            to="/"
+            onClick={closeDrawer}
+            className="text-gray-300 hover:text-white text-center"
           >
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
-          <span className="ml-3 text-xl">Drive</span>
-        </Link>
-        <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
-          <Link to="/" className="mr-5 hover:text-gray-900">
             Home
           </Link>
-          <Link to="/drive" className="mr-5 hover:text-gray-900">
+          <Link
+            to="/drive"
+            onClick={closeDrawer}
+            className="text-gray-300 hover:text-white text-center"
+          >
             Drive
           </Link>
         </nav>
-        <button className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none rounded text-base mt-4 md:mt-0">
-          <UserButton />
-        </button>
       </div>
-    </header>
+    </div>
   );
 };
 

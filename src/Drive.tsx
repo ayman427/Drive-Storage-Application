@@ -3,8 +3,11 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { Button } from "./components/ui/button";
+
 const Drive = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const uploadFile = useMutation(api.files.uploadFile);
   const deleteFile = useMutation(api.files.deleteFile);
   const { user, isSignedIn } = useUser();
@@ -12,6 +15,24 @@ const Drive = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFile(event.target.files?.[0] || null);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const droppedFile = event.dataTransfer.files?.[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+    }
   };
 
   const handleUpload = async () => {
@@ -28,9 +49,6 @@ const Drive = () => {
     url.searchParams.append("api_key", import.meta.env.VITE_CLOUDINARY_API_KEY);
 
     try {
-      // Log the URL and formData before the request
-      console.log("Uploading to Cloudinary with URL:", url.toString());
-
       const response = await fetch(url.toString(), {
         method: "POST",
         body: formData,
@@ -39,16 +57,12 @@ const Drive = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error uploading file:", errorText);
-        throw new Error(errorText); // Provide more details on the error
+        throw new Error(errorText);
       }
 
       const result = await response.json();
-      const fileUrl = result.secure_url; // This should be publicly accessible now
+      const fileUrl = result.secure_url;
 
-      // Log result to ensure fileUrl is correct
-      console.log("File uploaded successfully. File URL:", fileUrl);
-
-      // Upload the file URL to your database (or convex server)
       await uploadFile({
         user: user.primaryEmailAddress?.emailAddress || "unknown",
         fileName: file.name,
@@ -56,7 +70,7 @@ const Drive = () => {
         uploadDate: new Date().toISOString(),
       });
 
-      setFile(null); // Clear the file input after successful upload
+      setFile(null);
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("There was an issue uploading your file. Please try again.");
@@ -71,7 +85,13 @@ const Drive = () => {
     const fileType = fileName.split(".").pop()?.toLowerCase();
 
     if (fileType?.match(/(jpg|jpeg|png|gif|webp)$/)) {
-      return <img src={fileUrl} alt={fileName} className="w-full rounded-lg" />;
+      return (
+        <img
+          src={fileUrl}
+          alt={fileName}
+          className="w-full h-64 object-cover rounded-lg"
+        />
+      );
     } else if (fileType?.match(/(mp4|webm|ogg)$/)) {
       return (
         <video controls className="w-full rounded-lg">
@@ -109,32 +129,75 @@ const Drive = () => {
     }
   };
 
+  const filteredFiles =
+    files?.filter((file) =>
+      file.fileName.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
+
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Drive</h1>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-4xl font-bold mb-6 text-center">My Drive</h1>
       {isSignedIn ? (
         <>
-          <input type="file" onChange={handleFileChange} className="mb-4" />
+          <div
+            className={`border-dashed border-2 rounded-lg p-6 mb-6 text-center ${
+              isDragging ? "border-blue-600 bg-blue-50" : "border-gray-400"
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {file ? (
+              <p className="text-lg">{file.name}</p>
+            ) : (
+              <p className="text-gray-600">
+                Drag and drop a file here, or click to select one
+              </p>
+            )}
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="hidden"
+              id="fileInput"
+            />
+            <label
+              htmlFor="fileInput"
+              className="cursor-pointer text-blue-600 underline"
+            >
+              Browse Files
+            </label>
+          </div>
+
           <Button
-            variant="destructive"
             onClick={handleUpload}
-            className="bg-blue-500 text-white py-2 px-4 rounded mb-6 hover:bg-blue-600"
+            className="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition"
           >
             Upload
           </Button>
 
-          <h2 className="text-2xl mb-4">Your Files:</h2>
-          {files && files.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {files.map((file) => (
+          <h2 className="font-bold text-2xl mt-6 mb-4 text-left">
+            Your Files:
+          </h2>
+
+          {/* Search Bar */}
+          <input
+            type="text"
+            placeholder="Search files..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-400 rounded-lg px-4 py-2 mb-4 w-full"
+          />
+
+          {filteredFiles.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredFiles.map((file) => (
                 <div
                   key={file._id}
                   className="bg-white p-4 rounded-lg shadow-md"
                 >
                   {renderPreview(file.fileUrl, file.fileName)}
-                  <p className="mt-2 font-semibold">{file.fileName}</p>
-                  <p className="text-gray-500 text-sm">
-                    Uploaded on: {new Date(file.uploadDate).toLocaleString()}
+                  <p className="mt-2 font-semibold text-left">
+                    {file.fileName}
                   </p>
                   <div className="mt-2 flex justify-between">
                     <a
@@ -155,11 +218,15 @@ const Drive = () => {
               ))}
             </div>
           ) : (
-            <p>No files uploaded yet.</p>
+            <p className="text-center text-gray-600">
+              No files found with that name.
+            </p>
           )}
         </>
       ) : (
-        <p>Please log in to upload and view files.</p>
+        <p className="text-center text-gray-600">
+          Please log in to upload and view files.
+        </p>
       )}
     </div>
   );
