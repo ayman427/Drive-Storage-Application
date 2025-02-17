@@ -51,3 +51,29 @@ export const deleteFile = mutation({
     await ctx.db.delete(id);
   },
 });
+
+// Mutation to rename a file
+export const renameFile = mutation({
+  args: {
+    fileId: v.string(),
+    newFileName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { fileId, newFileName } = args;
+    const id = fileId as Id<"files">;
+
+    // Check if the file exists
+    const file = await ctx.db
+      .query("files")
+      .filter((q) => q.eq(q.field("_id"), id))
+      .first();
+    if (!file) {
+      throw new Error("File not found");
+    }
+
+    // Update the file's name
+    await ctx.db.patch(id, {
+      fileName: newFileName,
+    });
+  },
+});

@@ -8,8 +8,10 @@ const Drive = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [uploadProgress, setUploadProgress] = useState(0); // Progress state
   const uploadFile = useMutation(api.files.uploadFile);
   const deleteFile = useMutation(api.files.deleteFile);
+  const renameFile = useMutation(api.files.renameFile); // Mutation to handle file renaming
   const { user, isSignedIn } = useUser();
   const files = useQuery(api.files.getFilesForUser);
 
@@ -48,37 +50,70 @@ const Drive = () => {
     );
     url.searchParams.append("api_key", import.meta.env.VITE_CLOUDINARY_API_KEY);
 
-    try {
-      const response = await fetch(url.toString(), {
-        method: "POST",
-        body: formData,
-      });
+    const xhr = new XMLHttpRequest();
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error uploading file:", errorText);
-        throw new Error(errorText);
+    xhr.open("POST", url.toString(), true);
+
+    // Update progress
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        const progress = (event.loaded / event.total) * 100;
+        setUploadProgress(progress);
       }
+    });
 
-      const result = await response.json();
-      const fileUrl = result.secure_url;
+    // Handle upload success
+    xhr.onload = async () => {
+      if (xhr.status === 200) {
+        const result = JSON.parse(xhr.responseText);
+        const fileUrl = result.secure_url;
 
-      await uploadFile({
-        user: user.primaryEmailAddress?.emailAddress || "unknown",
-        fileName: file.name,
-        fileUrl: fileUrl,
-        uploadDate: new Date().toISOString(),
-      });
+        await uploadFile({
+          user: user.primaryEmailAddress?.emailAddress || "unknown",
+          fileName: file.name,
+          fileUrl: fileUrl,
+          uploadDate: new Date().toISOString(),
+        });
 
-      setFile(null);
-    } catch (error) {
-      console.error("Error uploading file:", error);
+        setFile(null);
+        setUploadProgress(0); // Reset progress
+      } else {
+        console.error("Error uploading file:", xhr.responseText);
+        alert("There was an issue uploading your file. Please try again.");
+      }
+    };
+
+    // Handle upload error
+    xhr.onerror = () => {
+      console.error("Error uploading file.");
       alert("There was an issue uploading your file. Please try again.");
-    }
+    };
+
+    // Send the request
+    xhr.send(formData);
   };
 
   const handleDelete = async (fileId: string) => {
-    await deleteFile({ fileId });
+    await deleteFile({ fileId }); // Close the menu after deletion
+  };
+
+  const handleRename = async (fileId: string, currentFileName: string) => {
+    // Split the file name and extension
+    const lastDotIndex = currentFileName.lastIndexOf("."); // Find the last dot in the file name
+    const baseName =
+      lastDotIndex === -1
+        ? currentFileName
+        : currentFileName.substring(0, lastDotIndex); // Get the base name
+    const extension =
+      lastDotIndex === -1 ? "" : currentFileName.substring(lastDotIndex + 1); // Get the extension
+
+    const newName = prompt("Enter new file name:", baseName);
+    if (newName) {
+      // Ensure the extension remains the same while updating the base name
+      const newFileName = extension ? `${newName}.${extension}` : newName; // If there's an extension, keep it, else just use the new name
+      await renameFile({ fileId, newFileName }); // Call API to update the file name with the same extension
+      console.log("File renamed to:", newFileName);
+    }
   };
 
   const renderPreview = (fileUrl: string, fileName: string) => {
@@ -94,7 +129,7 @@ const Drive = () => {
       );
     } else if (fileType?.match(/(mp4|webm|ogg)$/)) {
       return (
-        <video controls className="w-full rounded-lg">
+        <video controls className="w-full h-64 rounded-lg">
           <source src={fileUrl} type={`video/${fileType}`} />
           Your browser does not support the video tag.
         </video>
@@ -111,7 +146,7 @@ const Drive = () => {
         <iframe
           src={fileUrl}
           title={fileName}
-          className="w-full h-96 border rounded-lg"
+          className="w-full h-64 border rounded-lg"
           frameBorder="0"
         ></iframe>
       );
@@ -140,9 +175,7 @@ const Drive = () => {
       {isSignedIn ? (
         <>
           <div
-            className={`border-dashed border-2 rounded-lg p-6 mb-6 text-center ${
-              isDragging ? "border-blue-600 bg-blue-50" : "border-gray-400"
-            }`}
+            className={`border-dashed border-2 rounded-lg p-6 mb-6 text-center ${isDragging ? "border-blue-600 bg-blue-50" : "border-gray-400"}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -167,6 +200,16 @@ const Drive = () => {
               Browse Files
             </label>
           </div>
+
+          {/* Display the progress bar when uploading */}
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <div className="w-full bg-gray-300 rounded-lg">
+              <div
+                className="bg-blue-600 h-2 rounded-lg"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+          )}
 
           <Button
             onClick={handleUpload}
@@ -196,37 +239,35 @@ const Drive = () => {
                   className="bg-white p-4 rounded-lg shadow-md dark:bg-filescard"
                 >
                   {renderPreview(file.fileUrl, file.fileName)}
-                  <p className="mt-2 font-semibold text-left">
+                  <p className="mt-2 text-sm text-gray-600 truncate">
                     {file.fileName}
                   </p>
-                  <div className="mt-2 flex justify-between">
-                    <a
-                      href={file.fileUrl}
-                      download={file.fileName}
-                      className="text-green-500 hover:text-green-600"
-                    >
-                      ⬇️ Download
+                  <Button
+                    className="mt-4 text-sm bg-red-600 text-white"
+                    onClick={() => handleDelete(file._id)}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    className="mt-2 text-sm bg-yellow-600 text-white"
+                    onClick={() => handleRename(file._id, file.fileName)}
+                  >
+                    Rename
+                  </Button>
+                  <Button className="mt-2 text-sm bg-green-600 text-white">
+                    <a href={file.fileUrl} download={file.fileName}>
+                      Download
                     </a>
-                    <button
-                      onClick={() => handleDelete(file._id)}
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
+                  </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-600">
-              No files found with that name.
-            </p>
+            <p>No files found.</p>
           )}
         </>
       ) : (
-        <p className="text-center text-gray-600">
-          Please log in to upload and view files.
-        </p>
+        <p className="text-center">Please sign in to access your drive.</p>
       )}
     </div>
   );
